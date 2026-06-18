@@ -1,0 +1,51 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# WordPress configuration
+wp-config.php
+.htaccess
+
+# Backups and databases
+*.wpress
+*.sql
+*.sql.gz
+backups/
+private-export/
+
+# Generated files and logs
+*.log
+wp-content/debug.log
+wp-content/cache/
+wp-content/upgrade/
+wp-content/ai1wm-backups/
+wp-content/backups/
+
+# User media
+wp-content/uploads/
+
+# Ignore third-party plugins
+wp-content/plugins/*
+!wp-content/plugins/my-plugin/
+!wp-content/plugins/my-plugin/**
+
+# Ignore third-party themes
+wp-content/themes/*
+!wp-content/themes/worldbite-global-market/
+!wp-content/themes/worldbite-global-market/**
+
+# Ignore other must-use plugins
+wp-content/mu-plugins/*
+!wp-content/mu-plugins/portfolio-demo-safety.php
+
+# Editors and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies
+node_modules/
+vendor/
