@@ -224,3 +224,106 @@ function mp_create_collection_shortcode( $atts = array() ) {
     return $out;
 }
 add_shortcode('mp_create_collection', 'mp_create_collection_shortcode');
+
+/**
+ * Admin product selector for Collection ingredients.
+ * This lets you edit which WooCommerce products appear inside a recipe collection.
+ */
+
+function mp_add_collection_products_meta_box() {
+    add_meta_box(
+        'mp_collection_products_box',
+        __('Collection Ingredients / Products', 'mp'),
+        'mp_render_collection_products_meta_box',
+        'collection',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'mp_add_collection_products_meta_box');
+
+function mp_render_collection_products_meta_box( $post ) {
+    wp_nonce_field( 'mp_save_collection_products', 'mp_collection_products_nonce' );
+
+    $selected_products = get_post_meta( $post->ID, MP_COLLECTION_META, true );
+
+    if ( ! is_array( $selected_products ) ) {
+        $selected_products = array();
+    }
+
+    $selected_products = array_map( 'intval', $selected_products );
+
+    $products = get_posts( array(
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'orderby'        => 'title',
+        'order'          => 'ASC',
+    ) );
+
+    if ( empty( $products ) ) {
+        echo '<p>' . esc_html__( 'No products found. Add products first under Products → Add New.', 'mp' ) . '</p>';
+        return;
+    }
+
+    echo '<p><strong>' . esc_html__( 'Choose the products that belong inside this recipe collection:', 'mp' ) . '</strong></p>';
+
+    echo '<div style="max-height: 380px; overflow: auto; border: 1px solid #ddd; padding: 12px; background: #fff;">';
+
+    foreach ( $products as $product_post ) {
+        $product = wc_get_product( $product_post->ID );
+
+        if ( ! $product ) {
+            continue;
+        }
+
+        $checked = in_array( $product_post->ID, $selected_products, true ) ? 'checked' : '';
+
+        echo '<label style="display:block; margin-bottom:10px;">';
+        echo '<input type="checkbox" name="mp_collection_products[]" value="' . esc_attr( $product_post->ID ) . '" ' . $checked . '> ';
+        echo esc_html( $product->get_name() );
+
+        if ( $product->get_price_html() ) {
+            echo ' <span style="color:#666;">— ' . wp_kses_post( $product->get_price_html() ) . '</span>';
+        }
+
+        echo '</label>';
+    }
+
+    echo '</div>';
+
+    echo '<p style="color:#666; margin-top:10px;">';
+    echo esc_html__( 'These selected products will appear under “Inside this collection” and will be added when the visitor clicks “Add all to cart”.', 'mp' );
+    echo '</p>';
+}
+
+function mp_save_collection_products_meta_box( $post_id ) {
+    if ( ! isset( $_POST['mp_collection_products_nonce'] ) ) {
+        return;
+    }
+
+    if ( ! wp_verify_nonce( $_POST['mp_collection_products_nonce'], 'mp_save_collection_products' ) ) {
+        return;
+    }
+
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+
+    if ( get_post_type( $post_id ) !== 'collection' ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    $products = isset( $_POST['mp_collection_products'] )
+        ? array_map( 'intval', (array) $_POST['mp_collection_products'] )
+        : array();
+
+    $products = array_values( array_unique( array_filter( $products ) ) );
+
+    update_post_meta( $post_id, MP_COLLECTION_META, $products );
+}
+add_action( 'save_post_collection', 'mp_save_collection_products_meta_box' );
