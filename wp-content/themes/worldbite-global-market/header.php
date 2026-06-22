@@ -67,7 +67,7 @@
                 <li><a href="<?php echo esc_url( get_post_type_archive_link( 'collection' ) ?: home_url( '/collections/' ) ); ?>"><?php esc_html_e( 'Collections', 'worldbite' ); ?></a></li>
                 <li><a href="<?php echo esc_url( home_url( '/#about' ) ); ?>"><?php esc_html_e( 'About Us', 'worldbite' ); ?></a></li>
                 <li><a href="<?php echo esc_url( home_url( '/#collections' ) ); ?>"><?php esc_html_e( 'Recipes', 'worldbite' ); ?></a></li>
-                <li class="wb-deals"><a href="<?php echo esc_url( worldbite_shop_url() ); ?>"><span aria-hidden="true">◆</span> <?php esc_html_e( 'Deals', 'worldbite' ); ?></a></li>
+                <li class="wb-deals"><a href="<?php echo esc_url( home_url( '/deals/' ) ); ?>"><span aria-hidden="true">◆</span> <?php esc_html_e( 'Deals', 'worldbite' ); ?></a></li>
             </ul>
         </div>
     </nav>
