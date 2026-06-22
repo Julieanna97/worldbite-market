@@ -1,9 +1,9 @@
 <?php
 get_header();
-$taxonomy = taxonomy_exists( 'product_collection' ) ? 'product_collection' : 'collection_category';
+$taxonomy = 'collection_category';
 $search   = isset( $_GET['collection_search'] ) ? sanitize_text_field( wp_unslash( $_GET['collection_search'] ) ) : '';
 $sort     = isset( $_GET['sort'] ) ? sanitize_key( $_GET['sort'] ) : 'latest';
-$cat_id   = isset( $_GET['cat'] ) ? absint( $_GET['cat'] ) : 0;
+$cat_id = isset( $_GET['collection_cat'] ) ? absint( $_GET['collection_cat'] ) : 0;
 $paged    = max( 1, get_query_var( 'paged' ) );
 $args = array(
     'post_type'      => 'collection',
@@ -15,7 +15,15 @@ $args = array(
     'order'          => 'alpha' === $sort ? 'ASC' : 'DESC',
 );
 if ( $cat_id ) {
-    $args['tax_query'] = array( array( 'taxonomy' => $taxonomy, 'field' => 'term_id', 'terms' => $cat_id ) );
+    $args['tax_query'] = array(
+        array(
+            'taxonomy'         => $taxonomy,
+            'field'            => 'term_id',
+            'terms'            => array( $cat_id ),
+            'include_children' => true,
+            'operator'         => 'IN',
+        ),
+    );
 }
 $query = new WP_Query( $args );
 $terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => false ) );
@@ -24,7 +32,7 @@ $terms = get_terms( array( 'taxonomy' => $taxonomy, 'hide_empty' => false ) );
     <section class="wb-archive-hero"><div class="wb-container"><p class="wb-eyebrow"><?php esc_html_e( 'Community favourites', 'worldbite' ); ?></p><h1><?php esc_html_e( 'Food collections', 'worldbite' ); ?></h1><p><?php esc_html_e( 'Browse ready-made product bundles for themed meals, pantry restocks and flavour adventures.', 'worldbite' ); ?></p></div></section>
     <div class="wb-container wb-page-shell">
         <form class="wb-filter-bar" method="get">
-            <label><span><?php esc_html_e( 'Category', 'worldbite' ); ?></span><select name="cat"><option value="0"><?php esc_html_e( 'All categories', 'worldbite' ); ?></option><?php foreach ( $terms as $term ) : ?><option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $cat_id, $term->term_id ); ?>><?php echo esc_html( $term->name ); ?></option><?php endforeach; ?></select></label>
+            <label><span><?php esc_html_e( 'Category', 'worldbite' ); ?></span><select name="collection_cat"><option value="0"><?php esc_html_e( 'All categories', 'worldbite' ); ?></option><?php foreach ( $terms as $term ) : ?><option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( $cat_id, $term->term_id ); ?>><?php echo esc_html( $term->name ); ?></option><?php endforeach; ?></select></label>
             <label><span><?php esc_html_e( 'Sort', 'worldbite' ); ?></span><select name="sort"><option value="latest" <?php selected( $sort, 'latest' ); ?>><?php esc_html_e( 'Newest first', 'worldbite' ); ?></option><option value="alpha" <?php selected( $sort, 'alpha' ); ?>><?php esc_html_e( 'A–Z', 'worldbite' ); ?></option></select></label>
             <label><span><?php esc_html_e( 'Search', 'worldbite' ); ?></span><input type="search" name="collection_search" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search collections…', 'worldbite' ); ?>"></label>
             <button type="submit"><?php esc_html_e( 'Apply', 'worldbite' ); ?></button>

@@ -44,24 +44,25 @@ function mp_register_collections() {
 
     register_post_type('collection', $cpt_args);
 
-    if ( taxonomy_exists('product_collection') ) {
-        register_taxonomy_for_object_type('product_collection', 'collection');
-    } else {
-        $tax_args = array(
-            'labels' => array(
-                'name'          => __('Collection Categories','mp'),
-                'singular_name' => __('Collection Category','mp'),
-            ),
-            'public'            => true,
-            'hierarchical'      => true,
-            'show_in_rest'      => true,
-            'show_admin_column' => true,
-            'rewrite'           => array('slug' => 'collection-category'),
-        );
-        $tax_args = apply_filters('mp_collection_taxonomy_params', $tax_args);
+    $tax_args = array(
+        'labels' => array(
+            'name'          => __('Collection Categories','mp'),
+            'singular_name' => __('Collection Category','mp'),
+        ),
+        'public'            => true,
+        'hierarchical'      => true,
+        'show_in_rest'      => true,
+        'show_admin_column' => true,
+        'rewrite'           => array(
+            'slug'       => 'collection-category',
+            'with_front' => false,
+        ),
+    );
 
-        register_taxonomy('collection_category', array('collection'), $tax_args);
-    }
+    $tax_args = apply_filters('mp_collection_taxonomy_params', $tax_args);
+
+    register_taxonomy('collection_category', array('collection'), $tax_args);
+    
 }
 add_action('init', 'mp_register_collections');
 
@@ -137,7 +138,7 @@ function mp_create_collection_shortcode( $atts = array() ) {
                 update_post_meta($post_id, MP_COLLECTION_META, $products);
 
                 
-                $taxonomy = taxonomy_exists('product_collection') ? 'product_collection' : 'collection_category';
+                $taxonomy = 'collection_category';
                 if ( $cat_id && $taxonomy ) {
                     wp_set_post_terms($post_id, array($cat_id), $taxonomy, false);
                 }
@@ -162,7 +163,7 @@ function mp_create_collection_shortcode( $atts = array() ) {
     }
 
     // Build category dropdown
-    $taxonomy = taxonomy_exists('product_collection') ? 'product_collection' : 'collection_category';
+    $taxonomy = 'collection_category';
     $terms    = $taxonomy ? get_terms(array('taxonomy'=>$taxonomy,'hide_empty'=>false)) : array();
 
     // Query WooCommerce products (only real Woo products so cart works)
