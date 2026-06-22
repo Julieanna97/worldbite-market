@@ -100,128 +100,182 @@ add_action('template_redirect', 'mp_handle_add_all_to_cart');
 
 
 function mp_create_collection_shortcode( $atts = array() ) {
-    if ( ! function_exists('WC') ) {
-        return '<p>'.esc_html__('WooCommerce is required.','mp').'</p>';
+    if ( ! function_exists( 'WC' ) ) {
+        return '<p>' . esc_html__( 'WooCommerce is required.', 'mp' ) . '</p>';
     }
-    if ( ! is_user_logged_in() ) {
-        return '<p>'.sprintf(
-            wp_kses_post( __('Please <a href="%s">log in</a> to create a recipe.','mp') ),
-            esc_url( wp_login_url( get_permalink() ) )
-        ).'</p>';
+
+    /*
+     * Admin only.
+     * This prevents normal visitors/customers from creating public collections.
+     */
+    if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+        return '<div class="mp-form-message mp-form-message--locked" style="padding:1rem;border:1px solid #ddd;border-radius:12px;background:#fff;">
+            <strong>' . esc_html__( 'Admin only', 'mp' ) . '</strong><br>
+            ' . esc_html__( 'This page is used by the site administrator to create recipe collections.', 'mp' ) . '
+        </div>';
     }
 
     $out = '';
 
     if (
-        isset($_POST['mp_create_collection']) &&
-        isset($_POST['_wpnonce']) &&
-        wp_verify_nonce($_POST['_wpnonce'], 'mp_create_collection')
+        isset( $_POST['mp_create_collection'] ) &&
+        isset( $_POST['_wpnonce'] ) &&
+        wp_verify_nonce( $_POST['_wpnonce'], 'mp_create_collection' )
     ) {
-        $title    = isset($_POST['mp_title']) ? sanitize_text_field($_POST['mp_title']) : '';
-        $cat_id   = isset($_POST['mp_category']) ? intval($_POST['mp_category']) : 0;
-        $products = isset($_POST['mp_products']) ? array_map('intval', (array) $_POST['mp_products']) : array();
-        $products = array_values( array_unique( array_filter($products) ) );
+        $title    = isset( $_POST['mp_title'] ) ? sanitize_text_field( wp_unslash( $_POST['mp_title'] ) ) : '';
+        $cat_id   = isset( $_POST['mp_category'] ) ? absint( $_POST['mp_category'] ) : 0;
+        $products = isset( $_POST['mp_products'] ) ? array_map( 'intval', (array) $_POST['mp_products'] ) : array();
+        $products = array_values( array_unique( array_filter( $products ) ) );
 
         if ( $title === '' ) {
-            $out .= '<div class="notice notice-error" style="padding:.8rem">'.esc_html__('Please enter a title.','mp').'</div>';
-        } elseif ( count($products) < 2 ) {
-            $out .= '<div class="notice notice-error" style="padding:.8rem">'.esc_html__('Please select at least 2 products.','mp').'</div>';
+            $out .= '<div class="notice notice-error" style="padding:.8rem">' . esc_html__( 'Please enter a title.', 'mp' ) . '</div>';
+        } elseif ( count( $products ) < 2 ) {
+            $out .= '<div class="notice notice-error" style="padding:.8rem">' . esc_html__( 'Please select at least 2 products.', 'mp' ) . '</div>';
         } else {
-            $post_id = wp_insert_post(array(
-                'post_type'   => 'collection',
-                'post_title'  => $title,
-                'post_status' => 'publish',
-                'post_author' => get_current_user_id(),
-            ));
+            $post_id = wp_insert_post(
+                array(
+                    'post_type'   => 'collection',
+                    'post_title'  => $title,
+                    'post_status' => 'publish',
+                    'post_author' => get_current_user_id(),
+                )
+            );
 
-            if ( $post_id && ! is_wp_error($post_id) ) {
-                update_post_meta($post_id, MP_COLLECTION_META, $products);
+            if ( $post_id && ! is_wp_error( $post_id ) ) {
+                update_post_meta( $post_id, MP_COLLECTION_META, $products );
 
-                
                 $taxonomy = 'collection_category';
-                if ( $cat_id && $taxonomy ) {
-                    wp_set_post_terms($post_id, array($cat_id), $taxonomy, false);
+
+                if ( $cat_id && taxonomy_exists( $taxonomy ) ) {
+                    wp_set_post_terms( $post_id, array( $cat_id ), $taxonomy, false );
                 }
 
-                
-                $out .= '<div class="notice notice-success" style="padding:.8rem">'
-                      . esc_html__('Collection created!','mp').' '
-                      . '<a href="'.esc_url(get_permalink($post_id)).'">'.esc_html__('View it','mp').'</a>'
-                      . '</div>';
+                /*
+                 * Optional image upload.
+                 * This becomes the Featured Image for the collection.
+                 */
+                if (
+                    ! empty( $_FILES['mp_collection_image']['name'] ) &&
+                    isset( $_FILES['mp_collection_image']['tmp_name'] ) &&
+                    is_uploaded_file( $_FILES['mp_collection_image']['tmp_name'] )
+                ) {
+                    require_once ABSPATH . 'wp-admin/includes/file.php';
+                    require_once ABSPATH . 'wp-admin/includes/media.php';
+                    require_once ABSPATH . 'wp-admin/includes/image.php';
 
-                
+                    $attachment_id = media_handle_upload( 'mp_collection_image', $post_id );
+
+                    if ( ! is_wp_error( $attachment_id ) ) {
+                        set_post_thumbnail( $post_id, $attachment_id );
+                    }
+                }
+
+                $out .= '<div class="notice notice-success" style="padding:.8rem">'
+                    . esc_html__( 'Collection created!', 'mp' ) . ' '
+                    . '<a href="' . esc_url( get_permalink( $post_id ) ) . '">' . esc_html__( 'View it', 'mp' ) . '</a>'
+                    . '</div>';
+
                 $out .= '<script>window.dataLayer=window.dataLayer||[];window.dataLayer.push({'
-                      . 'event:"collection_created",'
-                      . 'collection_id:'.(int)$post_id.','
-                      . 'collection_title:'.wp_json_encode( get_the_title($post_id) ).','
-                      . 'product_count:'.(int)count($products)
-                      . '});</script>';
+                    . 'event:"collection_created",'
+                    . 'collection_id:' . (int) $post_id . ','
+                    . 'collection_title:' . wp_json_encode( get_the_title( $post_id ) ) . ','
+                    . 'product_count:' . (int) count( $products )
+                    . '});</script>';
             } else {
-                $out .= '<div class="notice notice-error" style="padding:.8rem">'.esc_html__('Something went wrong.','mp').'</div>';
+                $out .= '<div class="notice notice-error" style="padding:.8rem">' . esc_html__( 'Something went wrong.', 'mp' ) . '</div>';
             }
         }
     }
 
-    // Build category dropdown
     $taxonomy = 'collection_category';
-    $terms    = $taxonomy ? get_terms(array('taxonomy'=>$taxonomy,'hide_empty'=>false)) : array();
 
-    // Query WooCommerce products (only real Woo products so cart works)
-    $products_q = new WP_Query(array(
-        'post_type'      => array('product'),
-        'posts_per_page' => 50,
-        'post_status'    => 'publish',
-        'orderby'        => 'title',
-        'order'          => 'ASC',
-        'no_found_rows'  => true,
-    ));
+    $terms = taxonomy_exists( $taxonomy )
+        ? get_terms(
+            array(
+                'taxonomy'   => $taxonomy,
+                'hide_empty' => false,
+            )
+        )
+        : array();
 
-    ob_start(); ?>
-    <form method="post" class="mp-form" style="max-width:800px">
+    $products_q = new WP_Query(
+        array(
+            'post_type'      => array( 'product' ),
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+            'no_found_rows'  => true,
+        )
+    );
+
+    ob_start();
+    ?>
+
+    <form method="post" enctype="multipart/form-data" class="mp-form" style="max-width:800px">
         <p>
-            <label><?php echo esc_html__('Recipe title','mp'); ?><br>
+            <label>
+                <?php echo esc_html__( 'Recipe title', 'mp' ); ?><br>
                 <input type="text" name="mp_title" required style="width:100%">
             </label>
         </p>
 
-        <?php if ( $taxonomy ): ?>
-        <p>
-            <label><?php echo esc_html__('Category','mp'); ?><br>
-                <select name="mp_category">
-                    <option value="0"><?php echo esc_html__('— Select —','mp'); ?></option>
-                    <?php foreach ($terms as $t): ?>
-                        <option value="<?php echo (int)$t->term_id; ?>"><?php echo esc_html($t->name); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-        </p>
+        <?php if ( $taxonomy && ! empty( $terms ) && ! is_wp_error( $terms ) ) : ?>
+            <p>
+                <label>
+                    <?php echo esc_html__( 'Category', 'mp' ); ?><br>
+                    <select name="mp_category">
+                        <option value="0"><?php echo esc_html__( '— Select —', 'mp' ); ?></option>
+                        <?php foreach ( $terms as $t ) : ?>
+                            <option value="<?php echo esc_attr( $t->term_id ); ?>">
+                                <?php echo esc_html( $t->name ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+            </p>
         <?php endif; ?>
 
+        <p>
+            <label>
+                <?php echo esc_html__( 'Recipe image', 'mp' ); ?><br>
+                <input type="file" name="mp_collection_image" accept="image/*">
+            </label>
+        </p>
+
         <fieldset>
-            <legend><?php echo esc_html__('Choose at least 2 products','mp'); ?></legend>
+            <legend><?php echo esc_html__( 'Choose at least 2 products', 'mp' ); ?></legend>
+
             <div style="max-height:320px;overflow:auto;border:1px solid #ddd;padding:10px">
-                <?php if ( $products_q->have_posts() ): ?>
-                    <?php while ( $products_q->have_posts() ): $products_q->the_post(); ?>
+                <?php if ( $products_q->have_posts() ) : ?>
+                    <?php while ( $products_q->have_posts() ) : ?>
+                        <?php $products_q->the_post(); ?>
+
                         <label style="display:block;margin-bottom:6px">
-                            <input type="checkbox" name="mp_products[]" value="<?php echo get_the_ID(); ?>">
+                            <input type="checkbox" name="mp_products[]" value="<?php echo esc_attr( get_the_ID() ); ?>">
                             <?php the_title(); ?>
                         </label>
-                    <?php endwhile; wp_reset_postdata(); ?>
-                <?php else: ?>
-                    <em><?php echo esc_html__('No products yet. Add some under WooCommerce → Products.','mp'); ?></em>
+                    <?php endwhile; ?>
+
+                    <?php wp_reset_postdata(); ?>
+                <?php else : ?>
+                    <em><?php echo esc_html__( 'No products yet. Add some under WooCommerce → Products.', 'mp' ); ?></em>
                 <?php endif; ?>
             </div>
         </fieldset>
 
-        <?php wp_nonce_field('mp_create_collection'); ?>
+        <?php wp_nonce_field( 'mp_create_collection' ); ?>
+
         <p>
             <button type="submit" name="mp_create_collection" class="button button-primary">
-                <?php echo esc_html__('Create collection','mp'); ?>
+                <?php echo esc_html__( 'Create collection', 'mp' ); ?>
             </button>
         </p>
     </form>
+
     <?php
     $out .= ob_get_clean();
+
     return $out;
 }
 add_shortcode('mp_create_collection', 'mp_create_collection_shortcode');

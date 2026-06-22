@@ -21,7 +21,7 @@
                 <h3><?php esc_html_e( 'Discover', 'worldbite' ); ?></h3>
                 <ul>
                     <li><a href="<?php echo esc_url( get_post_type_archive_link( 'collection' ) ?: home_url( '/collections/' ) ); ?>"><?php esc_html_e( 'Collections', 'worldbite' ); ?></a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/create-collection/' ) ); ?>"><?php esc_html_e( 'Create a collection', 'worldbite' ); ?></a></li>
+                    <li><a href="<?php echo esc_url( get_post_type_archive_link( 'collection' ) ?: home_url( '/collections/' ) ); ?>"><?php esc_html_e( 'Recipe collections', 'worldbite' ); ?></a></li>
                     <li><a href="<?php echo esc_url( home_url( '/#about' ) ); ?>"><?php esc_html_e( 'About WorldBite', 'worldbite' ); ?></a></li>
                 </ul>
             </div>

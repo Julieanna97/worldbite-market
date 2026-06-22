@@ -108,15 +108,32 @@ $cuisines = array(
                     <?php endwhile; wp_reset_postdata(); ?>
                 </div>
             <?php else : ?>
-                <div class="wb-empty"><h3><?php esc_html_e( 'Your global collections will appear here.', 'worldbite' ); ?></h3><a class="wb-button" href="<?php echo esc_url( home_url( '/create-collection/' ) ); ?>"><?php esc_html_e( 'Create a collection', 'worldbite' ); ?></a></div>
+                <div class="wb-empty">
+                    <h3><?php esc_html_e( 'Recipe collections will appear here soon.', 'worldbite' ); ?></h3>
+                    <a class="wb-button" href="<?php echo esc_url( worldbite_shop_url() ); ?>">
+                        <?php esc_html_e( 'Browse products', 'worldbite' ); ?>
+                    </a>
+                </div>
             <?php endif; ?>
         </div>
     </section>
 
     <section class="wb-section wb-cta-section">
         <div class="wb-container wb-cta-panel">
-            <div><span><?php esc_html_e( 'Make it yours', 'worldbite' ); ?></span><h2><?php esc_html_e( 'Create a shopping collection for your next food adventure.', 'worldbite' ); ?></h2></div>
-            <a class="wb-button wb-button-light" href="<?php echo esc_url( home_url( '/create-collection/' ) ); ?>"><?php esc_html_e( 'Create a collection', 'worldbite' ); ?> →</a>
+            <div>
+                <span><?php esc_html_e( 'Make it yours', 'worldbite' ); ?></span>
+                <h2><?php esc_html_e( 'Create a shopping collection for your next food adventure.', 'worldbite' ); ?></h2>
+            </div>
+
+            <?php if ( current_user_can( 'manage_options' ) ) : ?>
+                <a class="wb-button wb-button-light" href="<?php echo esc_url( home_url( '/create-collection/' ) ); ?>">
+                    <?php esc_html_e( 'Create a collection', 'worldbite' ); ?> →
+                </a>
+            <?php else : ?>
+                <a class="wb-button wb-button-light" href="<?php echo esc_url( get_post_type_archive_link( 'collection' ) ?: home_url( '/collections/' ) ); ?>">
+                    <?php esc_html_e( 'Browse collections', 'worldbite' ); ?> →
+                </a>
+            <?php endif; ?>
         </div>
     </section>
 </main>
