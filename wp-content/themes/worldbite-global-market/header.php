@@ -56,7 +56,7 @@
     <nav id="wb-category-navigation" class="wb-category-nav" aria-label="<?php esc_attr_e( 'Shop navigation', 'worldbite' ); ?>">
         <div class="wb-container">
             <ul>
-                <li class="wb-shop-all"><a href="<?php echo esc_url( worldbite_shop_url() ); ?>"><?php esc_html_e( 'Shop All', 'worldbite' ); ?> <span>⌄</span></a></li>
+                <li class="wb-shop-all"><a href="<?php echo esc_url( worldbite_shop_url() ); ?>"><?php esc_html_e( 'Shop All', 'worldbite' ); ?></a></li>
                 <li><a href="<?php echo esc_url( worldbite_category_url( 'asian-pantry' ) ); ?>"><?php esc_html_e( 'Asian', 'worldbite' ); ?></a></li>
                 <li><a href="<?php echo esc_url( worldbite_category_url( 'mediterranean' ) ); ?>"><?php esc_html_e( 'Mediterranean', 'worldbite' ); ?></a></li>
                 <li><a href="<?php echo esc_url( worldbite_category_url( 'latin-american' ) ); ?>"><?php esc_html_e( 'Latin American', 'worldbite' ); ?></a></li>
