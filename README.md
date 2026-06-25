@@ -1,62 +1,48 @@
 # WorldBite Market
 
-WorldBite Market is a custom WordPress and WooCommerce portfolio project for discovering food products and collections from around the world.
-
-## Features
-
-* Custom responsive WordPress theme
-* WooCommerce product catalogue
-* Global cuisine categories
-* Product search, cart, and checkout
-* Custom Collection post type
-* Collection creation functionality
-* Add all products from a collection to the cart
-* Stripe test-mode support
-* Docker-based local development
-* Public demo safety controls
-
-## Technologies
-
-* WordPress
-* PHP
-* WooCommerce
-* MariaDB
-* Docker
-* JavaScript
-* HTML
-* CSS
-
-## Project Structure
-
-### Custom theme
-
-`wp-content/themes/worldbite-global-market`
-
-### Custom plugin
-
-`wp-content/plugins/my-plugin`
-
-### Portfolio safety plugin
-
-`wp-content/mu-plugins/portfolio-demo-safety.php`
-
-The safety plugin prevents the public portfolio demo from sending real emails or processing live payments.
-
-## Local Development
-
-The project was developed locally with Docker using:
-
-* WordPress 6.8.2
-* PHP 8.2
-* MariaDB 10.6
-* phpMyAdmin
-
-The complete WordPress database and media files are not included in this public repository because they may contain private data.
+WorldBite Market is a WordPress and WooCommerce food marketplace project built as part of my fullstack development portfolio. The site focuses on browsing food products, exploring cuisine-inspired collections, and practicing custom WordPress theme and plugin development with PHP.
 
 ## Live Demo
 
-A live demonstration link will be added after deployment.
+Visit the live site: https://worldbitemarket.freedev.app/
 
-## Important
+## GitHub Repository
 
-This website is presented as a portfolio demonstration. No real orders or payments are processed.
+Repository: https://github.com/Julieanna97/worldbite-market
+
+## About the Project
+
+This project was created to practice building an e-commerce website with WordPress, WooCommerce, PHP, MariaDB, phpMyAdmin, and Docker. I built a custom theme for the marketplace layout and worked with WooCommerce pages such as the product catalogue, product details, cart, checkout, and account areas.
+
+I also worked on custom recipe and collection functionality so products can be grouped around meal ideas or cuisine themes, making the website feel more like a real food marketplace instead of only a default WooCommerce shop.
+
+## Main Features
+
+- Custom responsive WordPress theme
+- WooCommerce product catalogue
+- Product browsing, search, cart, and checkout flow
+- Cuisine-inspired product categories
+- Custom recipe and collection functionality
+- Admin-side WordPress content management
+- Docker-based local development setup
+- MariaDB database managed through phpMyAdmin
+- Public portfolio demo hosted online
+
+## Technologies Used
+
+- WordPress
+- PHP
+- WooCommerce
+- MariaDB
+- phpMyAdmin
+- Docker
+- JavaScript
+- HTML
+- CSS
+
+## Project Structure
+
+### Custom Theme
+
+```txt
+wp-content/themes/worldbite-global-market
